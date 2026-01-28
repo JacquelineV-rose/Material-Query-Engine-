@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <h1>Material Query</h1>
+
+
+<input type="text" id="userInput" autocomplete="off" placeholder="Please enter a formula"/>
+<button onclick="filter_Materials()">Search</button>
+
+
+
+
+<table id="materialsList">
+  <thead>
+    <tr>
+      <th>Material ID</th>
+      <th>Formula</th>
+      <th>Energy Above Hull</th>
+      <th>Band Gap</th>
+      <th>Formation Energy</th>
+      <th>Magnetization</th>
+      <th>Space Group</th>
+      <th>Stable</th>
+      <th>Magnetic</th>
+      <th>Ordering</th>
+      <th>Experimental</th>
+    </tr>
+  </thead>
+<tbody></tbody>
+</table>
+
+
+
+
+
+<script>
+  function display(materials){
+  const tbody = document.querySelector('#materialsList tbody');
+    tbody.innerHTML = '';
+
+
+
+if (materials.length === 0){
+  tbody.innerHTML = '<tr><td colspan="11">No results found</td></tr>';
+
+
+return;
+}
+
+      
+
+materials.forEach(m => {
+  const row = document.createElement('tr');
+
+let ordering;
+
+if (m.magnetic_ordering){
+
+  ordering = m.magnetic_ordering;
+} 
+else{
+
+  ordering = '~';
+}
+
+let experimental;
+
+if (m.experimentally_observed){
+
+experimental = 'Yes';
+}
+else{
+
+experimental = 'No';
+}
+
+let stable;
+
+if (m.energy_above_hull < 0.05){
+
+  stable = 'Yes';
+}
+else{
+
+stable = 'No';
+}
+
+let magnetic;
+  if (m.total_magnetization > 0){
+
+magnetic = 'Yes';
+} 
+else{
+  magnetic = 'No';
+}
+
+
+
+row.innerHTML = `
+  <td><a href="/material/${m.material_id}">${m.material_id}</a></td>
+  <td>${m.pretty_formula}</td>
+  <td>${m.energy_above_hull}</td>
+  <td>${m.band_gap}</td>
+  <td>${m.formation_energy_per_atom}</td>
+  <td>${m.total_magnetization}</td>
+  <td>${m.space_group}</td>
+  <td>${stable}</td>
+  <td>${magnetic}</td>
+  <td>${ordering}</td>
+  <td>${experimental}</td>
+`;
+
+
+tbody.appendChild(row);
+});
+}
+
+
+
+
+function filter_Materials() {
+  const query = document.getElementById('userInput').value.trim();
+  const url = query ? `/api/materials?q=${encodeURIComponent(query)}` : '/api/materials';
+
+
+  fetch(url)
+    .then(res => res.json())
+    
+    .then(data => {display(data);
+})
+        
+.catch(err => console.error(err));
+
+}
+
+
+
+  </script>
+</body>
+</html>

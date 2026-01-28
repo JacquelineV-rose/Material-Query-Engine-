@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h1>Material Description</h1>
+  <div id="details"></div>
+  <button id="downloadBtn">Download JSON</button>
+  <br><br>
+  <a href="/">Return</a>
+
+<script>
+const materialId = window.location.pathname.split('/').pop();
+
+
+
+fetch('/api/materials')
+  .then(res => res.json())
+  .then(data => {
+const mat_list = data.find(m => m.material_id === materialId);
+
+if (!mat_list) {
+  document.getElementById('details').innerText = 'Material not found';
+  return;
+}
+
+const detailsDiv = document.getElementById('details');
+
+
+const table = document.createElement('table');
+
+for (let key in mat_list){
+
+  const row = document.createElement('tr');
+  const val = mat_list[key] !== null ? mat_list[key] : '~';
+
+  row.innerHTML = `<td><b>${key}</b></td><td>${val}</td>`;
+
+table.appendChild(row);
+}
+
+
+detailsDiv.appendChild(table);
+
+
+document.getElementById('downloadBtn').onclick = () => {
+const blob = new Blob([JSON.stringify(mat_list, null, 2)], { type: 'application/json' });
+
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+
+a.href = url;
+a.download = `${mat_list.material_id}.json`;
+a.click();
+URL.revokeObjectURL(url);
+};
+
+});
+
+
+
+
+
+
+  </script>
+</body>
+</html>
